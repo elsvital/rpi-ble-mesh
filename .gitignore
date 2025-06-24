@@ -1,0 +1,55 @@
+# Byte-compiled / intermediários
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Ambiente virtual
+venv/
+env/
+
+# Configurações de IDEs/editor de código
+.vscode/
+.idea/
+*.iml
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log
+*.out
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de pacotes/instalação
+*.egg
+*.egg-info/
+dist/
+build/
+*.wheel
+
+# Banco de dados SQLite
+*.sqlite3
+
+# Arquivos de teste
+.coverage
+.tox/
+.nox/
+
+# Arquivos de containers
+*.dockerfile
+
+# Arquivos de linting/code analysis
+.mypy_cache/
+.pytest_cache/
+.pyre/
+bandit.json
+
+# Arquivos secretos (NUNCA armazene senhas ou chaves no repositório!)
+*.env
+.env.*
+
+# Outros
+*.ipynb_checkpoints
