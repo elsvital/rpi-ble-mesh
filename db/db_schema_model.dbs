@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="Sqlite" database="Sqlite" id="25e0548f-ae18-4433-8306-9e0669803e42" >
+	<schema name="Default" >
+		<table name="auth_group" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="name" type="TEXT" length="150" jt="-1" mandatory="y" />
+			<index name="pk_auth_group" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="unq_auth_group_name" unique="UNIQUE_KEY" >
+				<column name="name" />
+			</index>
+		</table>
+		<table name="auth_group_permissions" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="group_id" type="INTEGER" jt="4" mandatory="y" />
+			<column name="permission_id" type="INTEGER" jt="4" mandatory="y" />
+			<index name="pk_auth_group_permissions" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="auth_group_permissions_group_id_permission_id_0cd325b0_uniq" unique="UNIQUE_INDEX" >
+				<column name="group_id" />
+				<column name="permission_id" />
+			</index>
+			<index name="auth_group_permissions_group_id_b120cbf9" unique="NORMAL" >
+				<column name="group_id" />
+			</index>
+			<index name="auth_group_permissions_permission_id_84c5c92e" unique="NORMAL" >
+				<column name="permission_id" />
+			</index>
+			<fk name="Fk" to_schema="Default" to_table="auth_group" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="group_id" pk="id" />
+			</fk>
+			<fk name="Fk" to_schema="Default" to_table="auth_permission" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="permission_id" pk="id" />
+			</fk>
+		</table>
+		<table name="auth_permission" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="content_type_id" type="INTEGER" jt="4" mandatory="y" />
+			<column name="codename" type="TEXT" length="100" jt="-1" mandatory="y" />
+			<column name="name" type="TEXT" length="255" jt="-1" mandatory="y" />
+			<index name="pk_auth_permission" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="auth_permission_content_type_id_codename_01ab375a_uniq" unique="UNIQUE_INDEX" >
+				<column name="content_type_id" />
+				<column name="codename" />
+			</index>
+			<index name="auth_permission_content_type_id_2f476e4b" unique="NORMAL" >
+				<column name="content_type_id" />
+			</index>
+			<fk name="Fk" to_schema="Default" to_table="django_content_type" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="content_type_id" pk="id" />
+			</fk>
+		</table>
+		<table name="auth_user" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="password" type="TEXT" length="128" jt="-1" mandatory="y" />
+			<column name="last_login" type="DATETIME" jt="93" />
+			<column name="is_superuser" type="ENUM" jt="12" mandatory="y" />
+			<column name="username" type="TEXT" length="150" jt="-1" mandatory="y" />
+			<column name="last_name" type="TEXT" length="150" jt="-1" mandatory="y" />
+			<column name="email" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="is_staff" type="ENUM" jt="12" mandatory="y" />
+			<column name="is_active" type="ENUM" jt="12" mandatory="y" />
+			<column name="date_joined" type="DATETIME" jt="93" mandatory="y" />
+			<column name="first_name" type="TEXT" length="150" jt="-1" mandatory="y" />
+			<index name="pk_auth_user" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="unq_auth_user_username" unique="UNIQUE_KEY" >
+				<column name="username" />
+			</index>
+		</table>
+		<table name="auth_user_groups" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="user_id" type="INTEGER" jt="4" mandatory="y" />
+			<column name="group_id" type="INTEGER" jt="4" mandatory="y" />
+			<index name="pk_auth_user_groups" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="auth_user_groups_user_id_group_id_94350c0c_uniq" unique="UNIQUE_INDEX" >
+				<column name="user_id" />
+				<column name="group_id" />
+			</index>
+			<index name="auth_user_groups_user_id_6a12ed8b" unique="NORMAL" >
+				<column name="user_id" />
+			</index>
+			<index name="auth_user_groups_group_id_97559544" unique="NORMAL" >
+				<column name="group_id" />
+			</index>
+			<fk name="Fk" to_schema="Default" to_table="auth_user" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="user_id" pk="id" />
+			</fk>
+			<fk name="Fk" to_schema="Default" to_table="auth_group" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="group_id" pk="id" />
+			</fk>
+		</table>
+		<table name="auth_user_user_permissions" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="user_id" type="INTEGER" jt="4" mandatory="y" />
+			<column name="permission_id" type="INTEGER" jt="4" mandatory="y" />
+			<index name="pk_auth_user_user_permissions" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="auth_user_user_permissions_user_id_permission_id_14a6b632_uniq" unique="UNIQUE_INDEX" >
+				<column name="user_id" />
+				<column name="permission_id" />
+			</index>
+			<index name="auth_user_user_permissions_user_id_a95ead1b" unique="NORMAL" >
+				<column name="user_id" />
+			</index>
+			<index name="auth_user_user_permissions_permission_id_1fbb5f2c" unique="NORMAL" >
+				<column name="permission_id" />
+			</index>
+			<fk name="Fk" to_schema="Default" to_table="auth_user" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="user_id" pk="id" />
+			</fk>
+			<fk name="Fk" to_schema="Default" to_table="auth_permission" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="permission_id" pk="id" />
+			</fk>
+		</table>
+		<table name="central" spec="" >
+			<column name="id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="nome" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="versao" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="data_atualizacao" type="DATE" jt="91" mandatory="y" />
+			<index name="pk_central" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+		</table>
+		<table name="central_micro" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="versao" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="central_id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="micro_id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="data_atualizacao" type="DATE" jt="91" mandatory="y" />
+			<index name="pk_central_micro" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="central_micro_central_id_90250858" unique="NORMAL" >
+				<column name="central_id" />
+			</index>
+			<index name="central_micro_micro_id_fa9c59e5" unique="NORMAL" >
+				<column name="micro_id" />
+			</index>
+			<fk name="Fk" to_schema="Default" to_table="central" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="central_id" pk="id" />
+			</fk>
+			<fk name="Fk" to_schema="Default" to_table="micro_controlador" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="micro_id" pk="id" />
+			</fk>
+		</table>
+		<table name="django_admin_log" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="object_id" type="TEXT" jt="-1" />
+			<column name="object_repr" type="TEXT" length="200" jt="-1" mandatory="y" />
+			<column name="action_flag" type="INTEGER" jt="4" mandatory="y" unsigned="y" />
+			<column name="change_message" type="TEXT" jt="-1" mandatory="y" />
+			<column name="content_type_id" type="INTEGER" jt="4" />
+			<column name="user_id" type="INTEGER" jt="4" mandatory="y" />
+			<column name="action_time" type="DATETIME" jt="93" mandatory="y" />
+			<index name="pk_django_admin_log" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="django_admin_log_content_type_id_c4bce8eb" unique="NORMAL" >
+				<column name="content_type_id" />
+			</index>
+			<index name="django_admin_log_user_id_c564eba6" unique="NORMAL" >
+				<column name="user_id" />
+			</index>
+			<constraint name="Cns_django_admin_log_action_flag" >
+				<string><![CDATA["action_flag" >= 0]]></string>
+			</constraint>
+			<fk name="Fk" to_schema="Default" to_table="django_content_type" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="content_type_id" pk="id" />
+			</fk>
+			<fk name="Fk" to_schema="Default" to_table="auth_user" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="user_id" pk="id" />
+			</fk>
+		</table>
+		<table name="django_content_type" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="app_label" type="TEXT" length="100" jt="-1" mandatory="y" />
+			<column name="model" type="TEXT" length="100" jt="-1" mandatory="y" />
+			<index name="pk_django_content_type" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="django_content_type_app_label_model_76bd3d3b_uniq" unique="UNIQUE_INDEX" >
+				<column name="app_label" />
+				<column name="model" />
+			</index>
+		</table>
+		<table name="django_migrations" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="app" type="TEXT" length="255" jt="-1" mandatory="y" />
+			<column name="name" type="TEXT" length="255" jt="-1" mandatory="y" />
+			<column name="applied" type="DATETIME" jt="93" mandatory="y" />
+			<index name="pk_django_migrations" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+		</table>
+		<table name="django_session" spec="" >
+			<column name="session_key" type="TEXT" length="40" jt="-1" mandatory="y" />
+			<column name="session_data" type="TEXT" jt="-1" mandatory="y" />
+			<column name="expire_date" type="DATETIME" jt="93" mandatory="y" />
+			<index name="pk_django_session" unique="PRIMARY_KEY" >
+				<column name="session_key" />
+			</index>
+			<index name="django_session_expire_date_a5c62663" unique="NORMAL" >
+				<column name="expire_date" />
+			</index>
+		</table>
+		<table name="historico_atualizacao" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="data_atualizacao" type="DATE" jt="91" />
+			<column name="versao" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="log" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="micro_id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<index name="pk_historico_atualizacao" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="historico_atualizacao_micro_id_e86f80e9" unique="NORMAL" >
+				<column name="micro_id" />
+			</index>
+			<fk name="Fk" to_schema="Default" to_table="micro_controlador" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="micro_id" pk="id" />
+			</fk>
+		</table>
+		<table name="micro_controlador" spec="" >
+			<column name="id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="tipo_controlador" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="caminho_binario" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="token" type="TEXT" jt="-1" mandatory="y" />
+			<column name="ip" type="TEXT" length="254" jt="-1" />
+			<column name="data_atualizacao" type="DATE" jt="91" mandatory="y" />
+			<index name="pk_micro_controlador" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+		</table>
+		<table name="sessao_cliente" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="user_id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="jwt_token" type="TEXT" jt="-1" mandatory="y" />
+			<column name="created_at" type="DATETIME" jt="93" mandatory="y" />
+			<column name="last_seen" type="DATETIME" jt="93" mandatory="y" />
+			<index name="pk_sessao_cliente" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+		</table>
+		<table name="topicos" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="nome" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="mensagem" type="TEXT" jt="-1" />
+			<column name="central_id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="data_atualizacao" type="DATE" jt="91" mandatory="y" />
+			<index name="pk_topicos" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="topicos_central_id_fe9bff04" unique="NORMAL" >
+				<column name="central_id" />
+			</index>
+			<fk name="Fk" to_schema="Default" to_table="central" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="central_id" pk="id" />
+			</fk>
+		</table>
+		<table name="treino" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="user_id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="plan_id" type="TEXT" length="254" jt="-1" />
+			<column name="main_muscles" type="TEXT" length="254" jt="-1" />
+			<column name="exercise_id" type="TEXT" length="254" jt="-1" />
+			<column name="gym_id" type="TEXT" length="254" jt="-1" />
+			<column name="summary" type="TEXT" length="254" jt="-1" />
+			<column name="workout_score" type="REAL" jt="8" />
+			<column name="exercise_score" type="REAL" jt="8" />
+			<column name="resting_time" type="REAL" jt="8" />
+			<column name="used_load" type="REAL" jt="8" />
+			<column name="failed_reps" type="INTEGER" jt="4" />
+			<column name="total_reps" type="INTEGER" jt="4" />
+			<column name="total_series" type="INTEGER" jt="4" />
+			<column name="amplitude_score" type="REAL" jt="8" />
+			<column name="detailed_amplitude_score" type="REAL" jt="8" />
+			<column name="time_score" type="REAL" jt="8" />
+			<column name="detailed_time_score" type="REAL" jt="8" />
+			<column name="micro_id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="data_atualizacao" type="DATE" jt="91" mandatory="y" />
+			<index name="pk_treino" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="treino_micro_id_f2bf9b96" unique="NORMAL" >
+				<column name="micro_id" />
+			</index>
+			<fk name="Fk" to_schema="Default" to_table="micro_controlador" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="micro_id" pk="id" />
+			</fk>
+		</table>
+		<table name="versao_online" spec="" >
+			<column name="id" type="INTEGER" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTOINCREMENT]]></identity>
+			</column>
+			<column name="caminho_binario" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="versao" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="data_versao" type="DATE" jt="91" />
+			<column name="tipo_controlador" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="central_id" type="TEXT" length="254" jt="-1" mandatory="y" />
+			<column name="data_atualizacao" type="DATE" jt="91" mandatory="y" />
+			<index name="pk_versao_online" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="versao_online_central_id_c383f178" unique="NORMAL" >
+				<column name="central_id" />
+			</index>
+			<fk name="Fk" to_schema="Default" to_table="central" options="DEFERRABLE INITIALLY DEFERRED" >
+				<fk_column name="central_id" pk="id" />
+			</fk>
+		</table>
+	</schema>
+	<layout name="Main Diagram" id="926df3c1-ac3e-4e92-9400-a7e840598cf8" show_relation="columns" >
+		<entity schema="Default" name="auth_group" color="F4DDBE" x="180" y="100" />
+		<entity schema="Default" name="auth_group_permissions" color="F4DDBE" x="400" y="100" />
+		<entity schema="Default" name="auth_permission" color="F4DDBE" x="960" y="100" />
+		<entity schema="Default" name="auth_user" color="F4DDBE" x="700" y="340" />
+		<entity schema="Default" name="auth_user_groups" color="F4DDBE" x="700" y="100" />
+		<entity schema="Default" name="auth_user_user_permissions" color="F4DDBE" x="60" y="320" />
+		<entity schema="Default" name="central" color="C7F4BE" x="600" y="820" />
+		<entity schema="Default" name="central_micro" color="C7F4BE" x="600" y="1080" />
+		<entity schema="Default" name="django_admin_log" color="BED3F4" x="1580" y="720" />
+		<entity schema="Default" name="django_content_type" color="BED3F4" x="1860" y="720" />
+		<entity schema="Default" name="django_migrations" color="BED3F4" x="1580" y="460" />
+		<entity schema="Default" name="django_session" color="BED3F4" x="1860" y="460" />
+		<entity schema="Default" name="historico_atualizacao" color="C7F4BE" x="900" y="1080" />
+		<entity schema="Default" name="micro_controlador" color="C7F4BE" x="900" y="1640" />
+		<entity schema="Default" name="sessao_cliente" color="3986C1" x="1280" y="460" />
+		<entity schema="Default" name="topicos" color="C7F4BE" x="900" y="1360" />
+		<entity schema="Default" name="treino" color="C7F4BE" x="1200" y="1080" />
+		<entity schema="Default" name="versao_online" color="C7F4BE" x="600" y="1360" />
+		<group name="django_migrations" color="ECF0F7" >
+			<entity schema="Default" name="django_migrations" />
+			<entity schema="Default" name="django_content_type" />
+			<entity schema="Default" name="django_session" />
+			<entity schema="Default" name="django_admin_log" />
+		</group>
+		<group name="micro_controlador" color="EEF7EC" >
+			<entity schema="Default" name="micro_controlador" />
+			<entity schema="Default" name="central" />
+			<entity schema="Default" name="historico_atualizacao" />
+			<entity schema="Default" name="treino" />
+			<entity schema="Default" name="topicos" />
+			<entity schema="Default" name="versao_online" />
+			<entity schema="Default" name="central_micro" />
+		</group>
+		<group name="auth_group" color="F7F2EC" >
+			<entity schema="Default" name="auth_group" />
+			<entity schema="Default" name="auth_user" />
+			<entity schema="Default" name="auth_permission" />
+			<entity schema="Default" name="auth_group_permissions" />
+			<entity schema="Default" name="auth_user_user_permissions" />
+			<entity schema="Default" name="auth_user_groups" />
+		</group>
+	</layout>
+	<layout name="~Diagram with Sample Tools" id="bffec5e3-c6bd-4ca9-8ee4-85669ea9340e" show_column_type="y" show_relation="columns" >
+		<entity schema="Default" name="historico_atualizacao" color="C7F4BE" x="80" y="60" />
+		<entity schema="Default" name="micro_controlador" color="C7F4BE" x="440" y="60" />
+		<entity schema="Default" name="central_micro" color="C7F4BE" x="740" y="60" />
+		<entity schema="Default" name="central" color="C7F4BE" x="740" y="300" />
+		<entity schema="Default" name="treino" color="C7F4BE" x="400" y="320" />
+		<entity schema="Default" name="topicos" color="C7F4BE" x="1040" y="280" />
+		<entity schema="Default" name="versao_online" color="C7F4BE" x="740" y="560" />
+		<entity schema="Default" name="sessao_cliente" color="3986C1" x="60" y="320" />
+		<script name="SQL Editor" id="4e655a23-a69e-42c5-a5b6-1204159d1092" language="SQL" >
+			<string><![CDATA[SELECT
+	id, content_type_id, codename, name
+FROM
+	auth_permission n;]]></string>
+		</script>
+		<browser id="e6000b7b-fcf6-4712-b711-bc5135fb4401" name="Relational Data Editor" confirm_updates="y" >
+			<browse_table schema="Default" entity="auth_permission" fk_out="n" x="20" y="20" width="270" height="-60" >
+				<browse_table schema="Default" entity="auth_group_permissions" fk="Fk" fk_out="y" x="310" y="20" width="500" height="350" >
+					<browse_table schema="Default" entity="auth_group" fk="Fk" fk_out="n" x="830" y="20" width="500" height="350" record_view="y" />
+				</browse_table>
+			</browse_table>
+		</browser>
+		<query id="aceaf920-1c00-4645-9ac2-0b0b99554de8" name="Query Builder" >
+			<query_table schema="Default" name="auth_permission" alias="ap" x="60" y="60" >
+				<column name="id" />
+				<column name="content_type_id" />
+				<column name="codename" />
+				<column name="name" />
+				<query_table schema="Default" name="auth_group_permissions" alias="agp" x="320" y="60" fk="Fk" type="Inner Join" >
+					<column name="id" />
+					<column name="group_id" />
+					<column name="permission_id" />
+					<query_table schema="Default" name="auth_group" alias="ag" x="640" y="60" fk="Fk" type="Inner Join" >
+						<column name="id" />
+						<column name="name" />
+					</query_table>
+				</query_table>
+			</query_table>
+		</query>
+	</layout>
+</project>

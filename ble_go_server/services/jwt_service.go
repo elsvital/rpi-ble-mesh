@@ -119,8 +119,9 @@ func ExtractDataFromJSON(value []byte) (Treino, error) {
 	totalSeriesFloat = 0.0
 
 	fmt.Println("Preenche estrutura inicio")
+	userIDFloat := payload["user_id"].(float64)
+	userID = strconv.Itoa(int(userIDFloat))
 	microID = payload["micro_id"].(string)
-	userID = payload["user_id"].(string)
 	total_reps, exists := payload["total_reps"]
 	if exists {
 		totalRepsFloat = total_reps.(float64)
