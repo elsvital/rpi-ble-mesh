@@ -44,8 +44,10 @@ func (c *MachineDataCharacteristic) WriteValue(value []byte, options map[string]
 	err = dbc.SaveEdgeData(pyld)
 	if err != nil {
 		log.Printf("Erro ao gravar treino: %v", err)
+		fmt.Println("Erro ao gravar treino: %v", err)
 	} else {
 		log.Println("Treino gravado com sucesso.")
+		fmt.Println("Treino gravado com sucesso.")
 	}
 
 	return nil

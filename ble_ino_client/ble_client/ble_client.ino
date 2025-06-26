@@ -214,7 +214,7 @@ void checkFirmwareUpdate() {
 bool shouldCheckOTA() {
   unsigned long now = millis();
   // if (now - lastOTACheck > 86400000UL) { // simulação de 24h
-  if (now - lastOTACheck > 600000UL) { // 10 minutos = 600.000 ms
+  if (now - lastOTACheck > 60000UL) { //600000UL= 10 minutos = 600.000 ms
     lastOTACheck = now;
     return true;
   }
@@ -223,7 +223,7 @@ bool shouldCheckOTA() {
 
 bool shouldCheckUserData() {
   unsigned long now = millis();
-  if (now - lastOTACheck > 60000UL) { // 10 minutos = 600.000 ms
+  if (now - lastOTACheck > 60000UL) { // 1 minuto
     lastOTACheck = now;
     return true;
   }
@@ -263,13 +263,14 @@ void setup() {
 
 void loop() {
   if (targetDevice) {
-    if (shouldCheckUserData()){
-      connectAndSend();
-    }
+    // if (shouldCheckUserData()){
+    //   connectAndSend();
+    // }
+    connectAndSend();
     delay(5000);
-    if (shouldCheckOTA()) {
-      checkFirmwareUpdate();
-    }
+    // if (shouldCheckOTA()) {
+    //   checkFirmwareUpdate();
+    // }
   } else {
     Serial.println("🔎 Buscando servidor BLE...");
     NimBLEDevice::getScan()->start(5, true);

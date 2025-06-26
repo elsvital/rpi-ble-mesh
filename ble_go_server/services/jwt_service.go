@@ -106,6 +106,7 @@ func ExtractDataFromJSON(value []byte) (Treino, error) {
 	}
 	fmt.Println("📥 Valor recebido descriptografado (raw):", payload)
 
+	fmt.Println("Extrair dados...")
 	// Extrai dados
 	var microID string
 	var userID string
@@ -113,14 +114,26 @@ func ExtractDataFromJSON(value []byte) (Treino, error) {
 	var failedRepsFloat float64
 	var totalSeriesFloat float64
 
-	userIDFloat := payload["user_id"].(float64)
-	userID = strconv.Itoa(int(userIDFloat))
+	totalRepsFloat = 0.0
+	failedRepsFloat = 0.0
+	totalSeriesFloat = 0.0
+
+	fmt.Println("Preenche estrutura inicio")
 	microID = payload["micro_id"].(string)
-
-	totalRepsFloat = payload["total_reps"].(float64)
-	failedRepsFloat = payload["failed_reps"].(float64)
-	totalSeriesFloat = payload["total_series"].(float64)
-
+	userID = payload["user_id"].(string)
+	total_reps, exists := payload["total_reps"]
+	if exists {
+		totalRepsFloat = total_reps.(float64)
+	}
+	failed_reps, exists := payload["failed_reps"]
+	if exists {
+		failedRepsFloat = failed_reps.(float64)
+	}
+	total_series, exists := payload["total_series"]
+	if exists {
+		totalSeriesFloat = total_series.(float64)
+	}
+	fmt.Println("Preenche estrutura")
 	// Preenche estrutura
 	jdata := Treino{
 		MicroID:     microID,
@@ -128,7 +141,6 @@ func ExtractDataFromJSON(value []byte) (Treino, error) {
 		TotalReps:   int(totalRepsFloat),
 		FailedReps:  int(failedRepsFloat),
 		TotalSeries: int(totalSeriesFloat),
-		JWT:         tokenStr,
 	}
 	return jdata, nil
 }

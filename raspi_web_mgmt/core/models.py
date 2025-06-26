@@ -198,7 +198,8 @@ class Treino(models.Model):
         db_table = 'treino'
 
     def __str__(self):
-        return f'Treino do usuário {self.user_id}, enviado do micro controlador {self.micro.id} em: {self.data_atualizacao}'
+        data_str = self.data_atualizacao.strftime("%Y-%m-%d %H:%M:%S") if self.data_atualizacao else "sem data"
+        return f'Treino do usuário {self.user_id}, enviado do micro controlador {self.micro.id} em: {data_str}'
 
 class VersaoOnline(models.Model):
     central = models.ForeignKey(Central, models.DO_NOTHING)
