@@ -1,130 +1,137 @@
-# BLE Kafka Gateway
+# 🛰️ RPi-BLE: Gateway BLE com ESP32-S3
 
-Este projeto implementa um servidor GATT BLE em Python e Go que atua como gateway entre dispositivos IoT (como ESP32) e um broker Apache Kafka. O objetivo é criar uma solução para transmissão de dados sensoriais usando Bluetooth Low Energy (BLE) e envio desses dados para a nuvem via Kafka, com suporte a autenticação JWT.
+Este projeto é um sistema distribuído para coleta de dados via **BLE (Bluetooth Low Energy)** usando **ESP32-S3** como cliente e um **Raspberry Pi** como servidor BLE, com envio dos dados para uma infraestrutura de mensagens baseada em **Apache Kafka** (opcional). O sistema possui módulos escritos em Go, Python, C++ (Arduino) e integração com interface web em Django para armazenamento de dados de borda.
 
-## 📌 Visão Geral
+---
 
-Este servidor BLE roda no Raspberry Pi 4 e expõe uma characteristic BLE que aceita dados no formato JSON contendo um token JWT. Ao receber os dados, o servidor:
+## 🧱 Estrutura do Projeto
 
-1. Valida o token JWT.
-2. Verifica a expiração do token.
-3. Encaminha os dados para um tópico Kafka.
-
-O projeto tem como objetivo principal reduzir o consumo de energia em dispositivos IoT, substituindo a comunicação baseada em Wi-Fi por uma solução mais eficiente utilizando Bluetooth Low Energy (BLE), mantendo a confiabilidade na transmissão de dados através da integração com Apache Kafka.
-
-## 🧱 Componentes
-
-- **ESP32**: Atua como cliente BLE, envia dados com JWT.
-- **Raspberry Pi 4**: Atua como servidor BLE, validando dados e produzindo mensagens para o Kafka.
-- **Apache Kafka**: Broker de mensagens na nuvem que recebe dados sensoriais.
-- **JWT**: Utilizado para autenticação dos dados enviados.
-
-## 📂 Estrutura do Projeto
-
-```bash
-.
-├── README.md                  # Documentação principal do projeto
-├── ble_go_server              # Implementação do servidor BLE em Go
-│   ├── cmd/
-│   │   └── main.go            # Ponto de entrada do servidor Go
-│   ├── configs/
-│   │   └── settings.go        # Configurações do servidor Go
-│   ├── services/
-│   │   ├── bluetooth.go       # Serviço BLE (GATT) no Go
-│   │   └── kafka.go           # Integração Kafka no servidor Go
-│   ├── go.mod                 # Gerenciamento de dependências Go
-│   ├── README.md              # Documentação
-│   └── install-dependencies.sh  # Script para instalar dependências Go
-├── ble_ino_client             # Código para o cliente BLE no ESP32/Arduino
-│   └── ble_client.ino         # Implementação do cliente
-│   ├── README.md              # Documentação
-└── ble_py_server              # Implementação do servidor BLE em Python
-    ├── main.py                # Ponto de entrada do servidor Python
-    ├── services/
-    │   ├── bluetooth.py       # Serviço BLE (GATT) no Python
-    │   └── kafka.py           # Integração Kafka no servidor Python
-    ├── configs/
-    │   ├── settings.py        # Configurações no servidor Python
-    │   └── __init__.py
-    ├── requirements.txt       # Dependências Python do projeto
-    ├── README.md              # Documentação
-    └── install-dependencies.sh  # Script para instalar dependências Python
+```text
+rpi-ble/
+├── ble_go_server/          # Servidor BLE em Go + Kafka
+│   ├── cmd/                # Ponto de entrada do servidor
+│   ├── configs/            # Configurações como chaves JWT
+│   ├── firmware/           # Firmware OTA armazenado para atualização remota
+│   ├── services/           # Serviços: GATT, DB, Kafka, JWT
+│   ├── install-and-run.sh  # Script de instalação e execução
+│
+├── ble_ino_client/         # Firmware para ESP32-S3 (Arduino)
+│   ├── ble_client/         # Código principal do cliente BLE
+│
+├── ble_py_server/          # Versão alternativa do servidor BLE em Python
+│
+├── db/
+│   └── raspi_edge.sqlite   # Banco de dados local (SQLite)
+│
+├── raspi_web_mgmt/         # Interface Web para gerenciar sessões e treinos
+│   ├── core/               # Aplicação principal em Django com o modelo de dados 
+│
+├── arch.png                # Diagrama da arquitetura
+├── go.mod                  # Dependências Go
+└── README.md
 ```
 
-## 📡 Funcionalidades
+---
+## 🧠 Conceitos e Tecnologias
 
-- **BLE Advertising**: Dispositivo se anuncia como periférico com UUID de serviço customizado.
-- **GATT Service/Characteristic**: Expõe characteristic com suporte a `WriteValue`.
-- **Autenticação JWT**: Validação do campo `jwt` presente no payload.
-- **Produtor Kafka**: Envia os dados JSON para o broker Kafka no tópico `sensor.data`.
+### 📡 BLE (Bluetooth Low Energy)
+- **Cliente (ESP32-S3)**: envia JSON criptografado com dados da sessão (ex.: identificação, usuário, repetições etc).
+- **Servidor (Raspberry Pi com Go)**: atua como GATT Server, recebendo dados por `Characteristic` escrita pelo cliente.
 
-## 📡 Arquitetura Sensor-to-Cloud (ESP32 → Raspberry Pi 4 → Kafka / MQTT)
+### 🔐 Criptografia AES + JWT
+- O JSON é criptografado com **AES-CBC de 128 bits**, com IV aleatório, e depois codificado em base64.
+- O campo `jwt` é um **JSON Web Token** assinado no ESP32 com chave secreta e validado no servidor.
+- Exemplo de payload criptografado:
+  ```json
+  {
+    "jwt": "<token>",
+    "user_id": 245,
+    "total_reps": 10,
+    "failed_reps": 1,
+    "total_series": 2,
+    "micro_id": "mc_001"
+  }
+  ```
 
-Abaixo está a representação da arquitetura do servidor BLE:
+### 🐹 Go
+- Utilizado no backend BLE Server (`ble_go_server/`).
+- Principais bibliotecas:
+  - [`github.com/godbus/dbus`](https://github.com/godbus/dbus): para manipular o BlueZ via D-Bus.
+  - `crypto/aes`, `encoding/base64`: para descriptografar o payload do ESP32.
+  - `github.com/golang-jwt/jwt`: para validar tokens JWT.
+
+### 🧪 SQLite
+- Banco local para armazenar sessões de treino e atualizações OTA e sessões do clientes (micro-controladores).
+- Arquivo `raspi_edge.sqlite`.
+
+### ☁️ Apache Kafka
+- Usado para envio dos dados do BLE para um sistema de backend analítico.
+- Produtor Kafka está no arquivo `kafka.go`.
+
+### 🧠 Python (opcional)
+- Servidor BLE alternativo usando `dbus-python`.
+- Útil para testes e desenvolvimento rápido (`ble_py_server/`).
+
+### ⚙️ ESP32 com Arduino
+- Utiliza **NimBLE-Arduino** (leve, ideal para BLE Client).
+- A criptografia é feita com a biblioteca `AESLib`.
+- Firmware está em `ble_ino_client/ble_client/ble_client.ino`.
+
+### 🌐 Django Web
+- Painel web para visualização e gestão dos dados coletados.
+- Estrutura padrão do Django dentro de `raspi_web_mgmt/`.
+
+---
+
+## 🚀 Como Executar
+
+### 1. Requisitos
+
+#### Raspberry Pi:
+- Go ≥ 1.20
+- BlueZ (versão compatível com GATT + D-Bus)
+- SQLite
+- Apache Kafka (em rede ou local)
+- Python 3 (opcional para servidor BLE em Python)
+
+#### ESP32:
+- Placa: `ESP32-S3 Dev Module`
+- Bibliotecas:
+  - `AESLib`
+  - `ArduinoJson`
+  - `NimBLE-Arduino`
+  - `base64`
+
+### 2. Compilar e Executar Servidor Go
+
+```bash
+cd ble_go_server
+chmod + x install-and-run.sh
+./install-and-run.sh
+```
+
+### 3. Atualizar Firmware OTA (opcional)
+Coloque o novo `.bin` em `ble_go_server/firmware/esp32-s3/` com o nome `ble_client.ino.bin`.
+
+### 4. Interface Web
+
+```bash
+cd raspi_web_mgmt
+python -m  venv ble_env
+source ble_env/bin/activate
+pip install -r requirements.txt
+python manage.py runserver
+```
+
+---
+
+## 📷 Diagrama da Arquitetura
 
 ![Arquitetura do Servidor BLE](arch.png)
 
-### 🔹 1. Edge Domain
-
-#### ✅ ESP32 — SENSORS (Client BLE)
-
-- Atua como cliente BLE, enviando dados no formato JSON.
-- Utiliza emparelhamento BLE e criptografia para segurança.
-- Dados enviados incluem: timestamp, leituras de sensores, metadados, localização, status e códigos de erro.
-
-#### ✅ Raspberry Pi 4 — GATEWAY (Servidor BLE)
-
-- Atua como servidor BLE, recebendo dados JSON do ESP32.
-- Executa:
-  - **Preprocessamento e filtragem**
-  - **Armazenamento local** (SQLite)
-  - **Tratamento de erros e retry**
-  - **Monitoramento / logging**
-  - **Envio para Kafka** (modo padrão)
-  - **Publicação MQTT** (modo alternativo)
-
 ---
 
-### 🔹 2. Cloud Domain
-
-#### ✅ Apache Kafka Broker
-
-- Recebe eventos do Raspberry Pi via TCP/IP seguro.
-- Organiza os dados em tópicos (ex: `motion`, `proximity`).
-- Ideal para pipelines de analytics.
-
-#### ✅ Cloud MQTT Broker
-
-- Alternativa leve ao Kafka.
-- Útil para integração com sistemas móveis ou IoT legados.
-- Comunicação via **TLS/SSL** e autenticação por token.
-
----
-
-### 🔐 Segurança
-
-- BLE com emparelhamento + criptografia.
-- Transmissão para a nuvem via TLS/SSL.
-- Autenticação por token (JWT) para publicação Kafka/MQTT.
-
----
-
-### 🌐 Tecnologias utilizadas
-
-- Bluetooth Low Energy (BLE, GATT Profile)
-- Raspberry Pi 4 + BlueZ + D-Bus
-- Apache Kafka + Segmentio Kafka Go Client
-- SQLite (fallback de persistência local)
-- MQTT (em modo seguro)
-
-## 🛠️ Próximos Passos
-
-- [ ] Adicionar reconexão automática com o Kafka.
-- [ ] Melhorar logs e tratamento de erro.
-- [ ] Persistência local em caso de falha de rede.
-- [ ] Suporte a múltiplos characteristics e serviços.
-
-## 🧾 Licença
+## 📄 Licença
 
 MIT License
 
@@ -148,4 +155,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-> Os códigos e documentos deste projeto foram desenvolvidos em colaboração com ferramentas de Inteligência Artificial, como ChatGPT e GetBrain IA Assistant, ao longo de ciclos iterativos de desenvolvimento, testes e refinamentos.
+
+
