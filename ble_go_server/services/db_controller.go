@@ -297,6 +297,7 @@ func (dbc *DBController) InsertHistorico(h HistoricoAtualizacao) (int64, error) 
 func (dbc *DBController) SaveEdgeData(data Treino) error {
 
 	var err error
+
 	_, err = dbc.InsertTreino(data)
 	return err
 }

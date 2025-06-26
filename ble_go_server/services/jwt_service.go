@@ -134,7 +134,7 @@ func ExtractDataFromJSON(value []byte) (Treino, error) {
 	if exists {
 		totalSeriesFloat = total_series.(float64)
 	}
-	fmt.Println("Preenche estrutura")
+
 	// Preenche estrutura
 	jdata := Treino{
 		MicroID:     microID,
@@ -142,7 +142,9 @@ func ExtractDataFromJSON(value []byte) (Treino, error) {
 		TotalReps:   int(totalRepsFloat),
 		FailedReps:  int(failedRepsFloat),
 		TotalSeries: int(totalSeriesFloat),
+		JWT:         "NoToken",
 	}
+	
 	return jdata, nil
 }
 

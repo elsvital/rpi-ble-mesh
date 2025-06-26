@@ -192,14 +192,13 @@ class Treino(models.Model):
     detailed_amplitude_score = models.FloatField(blank=True, null=True)
     time_score = models.FloatField(blank=True, null=True)
     detailed_time_score = models.FloatField(blank=True, null=True)
-    data_atualizacao = models.DateField(auto_now=True)
+    data_atualizacao =  models.DateTimeField()
 
     class Meta:
         db_table = 'treino'
 
     def __str__(self):
-        data_str = self.data_atualizacao.strftime("%Y-%m-%d %H:%M:%S") if self.data_atualizacao else "sem data"
-        return f'Treino do usuário {self.user_id}, enviado do micro controlador {self.micro.id} em: {data_str}'
+        return f'Treino do usuário {self.user_id}, enviado do micro controlador {self.micro.id} em: {self.data_atualizacao}'
 
 class VersaoOnline(models.Model):
     central = models.ForeignKey(Central, models.DO_NOTHING)
