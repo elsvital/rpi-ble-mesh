@@ -2,10 +2,9 @@ package services
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
+	//"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/segmentio/kafka-go"
+	//"github.com/segmentio/kafka-go"
 	"time"
 )
 
@@ -110,7 +109,7 @@ func (dbc *DBController) DeleteCentral(id int) error {
 
 // ---------- Tabela micro_controlador ----------
 type MicroControlador struct {
-	ID             int
+	ID             string
 	Tipo           string
 	CaminhoBinario string
 	Token          string
@@ -188,7 +187,7 @@ func (dbc *DBController) DeleteTopico(id int) error {
 // ---------- Tabela treino ----------
 type Treino struct {
 	ID                int
-	MicroID           int
+	MicroID           string
 	UserID            string
 	PlanID            string
 	MainMuscles       string
@@ -206,11 +205,13 @@ type Treino struct {
 	DetailedAmplitude float64
 	TimeScore         float64
 	DetailedTimeScore float64
+	JWT               string
 }
 
 func (dbc *DBController) InsertTreino(t Treino) (int64, error) {
-	stmt := `INSERT INTO treino (micro_id, user_id, plan_id, main_muscles, exercise_id, gym_id, summary, workout_score, exercise_score, resting_time, used_load, failed_reps, total_reps, total_series, amplitude_score, detailed_amplitude_score, time_score, detailed_time_score) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	res, err := dbc.DB.Exec(stmt, t.MicroID, t.UserID, t.PlanID, t.MainMuscles, t.ExerciseID, t.GymID, t.Summary, t.WorkoutScore, t.ExerciseScore, t.RestingTime, t.UsedLoad, t.FailedReps, t.TotalReps, t.TotalSeries, t.AmplitudeScore, t.DetailedAmplitude, t.TimeScore, t.DetailedTimeScore)
+	now := time.Now()
+	stmt := `INSERT INTO treino (micro_id, user_id, failed_reps, total_reps, total_series, data_atualizacao) VALUES (?, ?, ?, ?, ?, ?)`
+	res, err := dbc.DB.Exec(stmt, t.MicroID, t.UserID, t.FailedReps, t.TotalReps, t.TotalSeries, now)
 	if err != nil {
 		return 0, err
 	}
@@ -222,7 +223,7 @@ func (dbc *DBController) InsertTreino(t Treino) (int64, error) {
 // ---------- Tabela versao_online ----------
 type VersaoOnline struct {
 	ID              int
-	CentralID       int
+	CentralID       string
 	CaminhoBinario  string
 	Versao          string
 	DataVersao      time.Time
@@ -238,12 +239,34 @@ func (dbc *DBController) InsertVersaoOnline(v VersaoOnline) (int64, error) {
 	return res.LastInsertId()
 }
 
+func (dbc *DBController) GetVersaoOnlineByMicroType(tipo_controlador string) (*VersaoOnline, error) {
+	stmt := `SELECT versao, central_id, caminho_binario, tipo_controlador FROM versao_online WHERE tipo_controlador = ?`
+	row := dbc.DB.QueryRow(stmt, tipo_controlador)
+	var cm VersaoOnline
+	err := row.Scan(&cm.Versao, &cm.CentralID, &cm.CaminhoBinario, &cm.TipoControlador)
+	if err != nil {
+		return nil, err
+	}
+	return &cm, nil
+}
+
 // ---------- Tabela central_micro ----------
 type CentralMicro struct {
 	Versao          string
 	DataAtualizacao time.Time
 	CentralID       int
 	MicroID         int
+}
+
+func (dbc *DBController) GetCentralMicroByMicroID(microID string) (*CentralMicro, error) {
+	stmt := `SELECT versao, data_atualizacao, central_id, micro_id FROM central_micro WHERE micro_id = ?`
+	row := dbc.DB.QueryRow(stmt, microID)
+	var cm CentralMicro
+	err := row.Scan(&cm.Versao, &cm.DataAtualizacao, &cm.CentralID, &cm.MicroID)
+	if err != nil {
+		return nil, err
+	}
+	return &cm, nil
 }
 
 func (dbc *DBController) InsertCentralMicro(cm CentralMicro) error {
@@ -271,38 +294,9 @@ func (dbc *DBController) InsertHistorico(h HistoricoAtualizacao) (int64, error) 
 }
 
 // ---------- Função para gravar payload de treino ----------
-func (dbc *DBController) SaveEdgeData(edge_data map[string]interface{}) error {
-	data, err := json.Marshal(edge_data)
-	if err != nil {
-		return err
-	}
-	var userID = data["user_id"].(string)
-	// Atualiza a sessao do usuario (micro-controlador)
-	err = dbc.UpsertSessao(userID, jwtRaw)
-	if err != nil {
-		return fmt.Errorf("erro ao atualizar sessao: %w", err)
-	}
+func (dbc *DBController) SaveEdgeData(data Treino) error {
 
-	var t Treino
-	t.MicroID = int(data["micro_id"].(float64))
-	t.UserID = userID
-	t.PlanID = data["plan_id"].(string)
-	t.MainMuscles = data["main_muscles"].(string)
-	t.ExerciseID = data["exercise_id"].(string)
-	t.GymID = data["gym_id"].(string)
-	t.Summary = data["summary"].(string)
-	t.WorkoutScore = data["workout_score"].(float64)
-	t.ExerciseScore = data["exercise_score"].(float64)
-	t.RestingTime = data["resting_time"].(float64)
-	t.UsedLoad = data["used_load"].(float64)
-	t.FailedReps = int(data["failed_reps"].(float64))
-	t.TotalReps = int(data["total_reps"].(float64))
-	t.TotalSeries = int(data["total_series"].(float64))
-	t.AmplitudeScore = data["amplitude_score"].(float64)
-	t.DetailedAmplitude = data["detailed_amplitude_score"].(float64)
-	t.TimeScore = data["time_score"].(float64)
-	t.DetailedTimeScore = data["detailed_time_score"].(float64)
-
-	_, err = dbc.InsertTreino(t)
+	var err error
+	_, err = dbc.InsertTreino(data)
 	return err
 }

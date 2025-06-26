@@ -2,16 +2,13 @@
 package services
 
 import (
-	"encoding/json"
+	"ble_go_server/configs"
 	"fmt"
 	"log"
-	"time"
 
-	"ble_go_server/configs"
-	"ble_go_server/services"
-
-	jwt "github.com/dgrijalva/jwt-go"
+	//jwt "github.com/dgrijalva/jwt-go"
 	"github.com/godbus/dbus/v5"
+	//"time"
 )
 
 type MachineDataCharacteristic struct {
@@ -19,42 +16,32 @@ type MachineDataCharacteristic struct {
 }
 
 func (c *MachineDataCharacteristic) WriteValue(value []byte, options map[string]dbus.Variant) *dbus.Error {
-	fmt.Println("📥 Valor recebido (raw):", string(value))
+	fmt.Println("📥 Valor recebido criptografado (raw):", string(value))
 
-	var payload map[string]interface{}
-	err := json.Unmarshal(value, &payload)
+	pyld, err := ExtractDataFromJSON(value)
 	if err != nil {
-		return dbus.MakeFailedError(fmt.Errorf("JSON inválido: %v", err))
+		return dbus.MakeFailedError(fmt.Errorf("Falha ao extrair dados JSON: %v", err))
 	}
 
-	tokenStr, ok := payload["jwt"].(string)
-	if !ok {
-		return dbus.MakeFailedError(fmt.Errorf("JWT ausente"))
+	// Você já obteve os dados de dentro do JWT, não precisa fazer Unmarshal de novo aqui
+	tokenStr := pyld.JWT
+	if tokenStr == "" {
+		return dbus.MakeFailedError(fmt.Errorf("JWT ausente no payload"))
 	}
 
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-		return []byte(configs.SECRET_KEY), nil
-	})
-	if err != nil || !token.Valid {
-		return dbus.MakeFailedError(fmt.Errorf("JWT inválido: %v", err))
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		fmt.Println("✅ JWT válido:", claims)
-		if exp, ok := claims["exp"].(float64); ok && int64(exp) < time.Now().Unix() {
-			return dbus.MakeFailedError(fmt.Errorf("JWT expirado: exp=%d", int64(exp)))
-		}
-		payload["user"] = claims["user"]
-	}
-
-	dbPath := "db/edge_vollta_sqlite"
-	dbc, err := services.NewDBController(dbPath)
+	dbPath := "../db/raspi_edge.sqlite"
+	dbc, err := NewDBController(dbPath)
 	if err != nil {
 		log.Fatalf("Erro ao abrir o banco: %v", err)
 	}
 	defer dbc.DB.Close()
 
-	err = dbc.SaveEdgeData(payload)
+	err = dbc.UpsertSessao(pyld.MicroID, tokenStr)
+	if err != nil {
+		log.Printf("Erro ao gravar session: %v", err)
+	}
+
+	err = dbc.SaveEdgeData(pyld)
 	if err != nil {
 		log.Printf("Erro ao gravar treino: %v", err)
 	} else {

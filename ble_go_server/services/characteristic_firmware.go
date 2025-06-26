@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"ble_go_server/configs"
-	"ble_go_server/services"
 
 	"github.com/godbus/dbus/v5"
 )
@@ -53,35 +52,40 @@ type FirmwareVersionCharacteristic struct {
 
 func (c *FirmwareVersionCharacteristic) WriteValue(value []byte, options map[string]dbus.Variant) *dbus.Error {
 	deviceID := extractDeviceID(options)
-	clientVersion := string(value)
-	log.Printf("📥 %s enviou versão %s", deviceID, clientVersion)
+	log.Printf("📥 %s solicitou autualização de versão %s", deviceID)
 
-	dbPath := "db/edge_vollta_sqlite"
-	dbc, err := services.NewDBController(dbPath)
+	pyld, err := ExtractDataFromJSON(value)
+	if err != nil {
+		return dbus.MakeFailedError(fmt.Errorf("Falha ao extrair dados JSON: %v", err))
+	}
+
+	dbPath := "../db/raspi_edge.sqlite"
+	dbc, err := NewDBController(dbPath)
 	if err != nil {
 		return dbus.MakeFailedError(fmt.Errorf("falha ao abrir banco: %v", err))
 	}
 	defer dbc.DB.Close()
 
-	var currentVersion string
-	err = dbc.DB.QueryRow("SELECT versao_atual FROM central_micro WHERE nome_dispositivo = ?", deviceID).Scan(&currentVersion)
+	currentVersion, err := dbc.GetCentralMicroByMicroID(pyld.MicroID)
 	if err != nil {
-		return dbus.MakeFailedError(fmt.Errorf("dispositivo não encontrado: %v", err))
+		log.Printf("Não existe versão registrada para o micro-controlador: %s. %v", pyld.MicroID, err)
+		return nil
+	}
+	var micro, _ = dbc.GetMicroByID(currentVersion.MicroID)
+
+	onlineVersion, err := dbc.GetVersaoOnlineByMicroType(micro.Tipo)
+	if err != nil {
+		log.Printf("Não existe versão registrada para o micro-controlador: %s. %v", pyld.MicroID, err)
+		return nil
 	}
 
-	if currentVersion == clientVersion {
+	if currentVersion.Versao == onlineVersion.Versao {
 		log.Println("✅ Firmware já está atualizado.")
 		return nil
 	}
 
 	var caminho string
-	err = dbc.DB.QueryRow(`
-		SELECT caminho_binario FROM versao_online
-		WHERE tipo_controlador = 'ESP32' AND versao > ?
-		ORDER BY versao DESC LIMIT 1`, clientVersion).Scan(&caminho)
-	if err != nil {
-		return dbus.MakeFailedError(fmt.Errorf("sem nova versão: %v", err))
-	}
+	caminho = onlineVersion.CaminhoBinario
 
 	bin, err := os.ReadFile(caminho)
 	if err != nil {
